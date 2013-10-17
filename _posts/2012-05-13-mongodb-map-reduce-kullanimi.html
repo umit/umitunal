@@ -1,0 +1,69 @@
+---
+layout: post
+title: MongoDB ile Map Reduce Kullanımı
+categories:
+- Java
+- Mongo
+tags: []
+status: publish
+type: post
+published: true
+meta:
+  _edit_last: '1'
+  _yoast_wpseo_focuskw: mongodb mapreduce tutorial
+  _yoast_wpseo_title: MongoDB ile Map Reduce Kullanımı - Ümit Ünal
+  _yoast_wpseo_metadesc: ''
+  _yoast_wpseo_meta-robots-noindex: '0'
+  _yoast_wpseo_meta-robots-nofollow: '0'
+  _yoast_wpseo_meta-robots-adv: none
+  _yoast_wpseo_sitemap-include: '-'
+  _yoast_wpseo_sitemap-prio: '-'
+  _yoast_wpseo_canonical: ''
+  _yoast_wpseo_redirect: ''
+  _wp_old_slug: spring-data-mongodb-map-reduce-kullanimi
+  _yoast_wpseo_linkdex: '56'
+---
+<a href="http://mongodb.org" target="_blank">MongoDB</a> document-oriented mimariye sahip <a href="http://en.wikipedia.org/wiki/NoSQL" target="_blank">NoSQL</a> veritabanıdır.MongoDB üzerinde bildiğimiz klasik veritabanlarındaki gibi tablo yapısına sahip değil.Verilerimizi <a href="http://bsonspec.org/" target="_blank">BSON</a> (Binary JSON) şeklinde tutuyor.Tablo yapısı yok onun yerine collectionlar mevcut.
+
+Öncelikle Map Reduce kavramı hakkında bilgi edinmek isterseniz <a title="http://devveri.com/hadoop/mapreduce-nedir" href="http://devveri.com/hadoop/mapreduce-nedir" target="_blank">devveri.com</a> da <a title="http://www.linkedin.com/in/hakanilter" href="http://www.linkedin.com/in/hakanilter" target="_blank">Hakan İLTER</a>'in “Map Reduce Nedir” makalesini okumanız faydalı olur.
+
+MongoDB üzerinde map reduce işlemlerini javascript ile yapılmaktadır.Klasik veritabanlarındaki <strong>count,sum,having</strong> gibi işlemleri yapmak için MongoDB üzerinde map reduce kullanıyoruz.
+
+<!--more-->Örnek product collectionında bulunan verilerim aşağıdaki gibidir.
+
+<script type="text/javascript" src="https://gist.github.com/2687228.js">// <![CDATA[
+// <![CDATA[ // ]
+// ]]></script>
+
+MongoDB üzerinde Map Reduce işlemlerini örneklerle anlatmak istiyorum.
+<strong>Örnek 1 :</strong> Şimdi ürün tiplerine göre ürünlerin toplam fiyatını almak için örnek bir map reduce işlemi yapalım.
+<script type="text/javascript" src="https://gist.github.com/2687602.js">// <![CDATA[
+
+// ]]></script>
+Shirt ürünlerimizin toplamı 50, Sweat Shirt ise 95.
+
+<strong>Örnek 2 :</strong> Ürünlerin sizelarına göre toplam kaç adet ürün bulunmakta onun hesaplamak için map reduce örneği aşağıdaki gibidir.
+<script type="text/javascript" src="https://gist.github.com/2687758.js">// <![CDATA[
+
+// ]]></script>
+
+<strong>Örnek 3 :</strong> Ürünlerin sizelarına göre bulunan ürünlerin toplam fiyatlarını hesaplamak için map reduce örneği aşağıdaki gibidir.
+<script type="text/javascript" src="https://gist.github.com/2687931.js">// <![CDATA[
+
+// ]]></script>
+
+L üründen 11 adet ve bu ürünlerin toplam fiyatı 215 TL
+XL üründen 19 adet ve bu ürünlerin toplam fiyatı 450 TL
+XXL üründen 24 adet ve bu ürünlerin toplam fiyatı 580 TL
+
+<strong>Örnek 4 :</strong> Ürün tiplerine göre bulunan product collectionındaki idlerini bulmak için map reduce örneği aşağıdaki gibidir.
+<script type="text/javascript" src="https://gist.github.com/2687992.js">// <![CDATA[
+
+// ]]></script>
+
+<strong>Örnek 5: </strong> Hangi üründen hangi renklerden olduğunu bulabileceğeniz map reduce aşağıdaki gibidir.
+<script type="text/javascript" src="https://gist.github.com/2688182.js">// <![CDATA[
+
+// ]]></script>
+
+Sonuç olarak bir çok işlemi map reduce kullanarak MongoDB üzerinde yapabilirsiz.Eğer yapılan işlemleri trace etmek isterseniz "<strong>print('')</strong>" fonksiyonu ile yapabilirsiniz en nihayetinde bir javascript yazıyorsunuz.

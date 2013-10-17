@@ -1,0 +1,76 @@
+---
+layout: post
+title: Method Chaining Java
+categories:
+- Java
+tags:
+- java
+- method chaining
+status: private
+type: post
+published: false
+meta:
+  _edit_last: '1'
+  _yoast_wpseo_linkdex: '0'
+---
+Method chaining ( Method zincirlemesi )
+
+<pre class="brush:java">
+public class ProductDto {
+
+	private String title;
+	private String content;
+
+	public ProductDto() {
+	}
+
+	public ProductDto setTitle(String title) {
+		this.title = title;
+		return this;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public ProductDto setContent(String content) {
+		this.content = content;
+		return this;
+	}
+
+	public String getContent() {
+		return content;
+	}
+
+	@Override
+	public String toString() {
+		return "ProductDto [content=" + content + ", title=" + title + "]";
+	}
+}
+</pre>
+
+Test Edelim
+<pre class="brush:java">
+public class ProductDtoMethodChainingTest {
+	public static void main(String[] args) {
+		ProductDto dto = new ProductDto()
+		dto.setTitle("Samsung Galaxy S2 ").setContent("OS:Android 2.3");
+		System.out.println(dto.toString());
+		
+	}
+}
+</pre>
+
+Method zincirlemesini kullandığımız bazı örnek yerler
+<ul>
+	<li>Hibernate Criteria Api</li>
+
+	<li>jQuery</li>
+
+</ul>
+
+
+Örnek
+<pre class="brush:javascript">
+     $("p.article").addClass("showClass").show("slow");
+</pre>

@@ -1,0 +1,364 @@
+---
+layout: post
+title: Hibernate & Spring ve Aspect ile ActiveRecord Pattern implementasyonu
+categories:
+- Java
+tags: []
+status: publish
+type: post
+published: true
+meta:
+  _yoast_wpseo_linkdex: '0'
+  _edit_last: '1'
+  _yoast_wpseo_focuskw: ''
+  _yoast_wpseo_title: ''
+  _yoast_wpseo_metadesc: ''
+  _yoast_wpseo_meta-robots-noindex: '0'
+  _yoast_wpseo_meta-robots-nofollow: '0'
+  _yoast_wpseo_meta-robots-adv: none
+  _yoast_wpseo_sitemap-include: '-'
+  _yoast_wpseo_sitemap-prio: '-'
+  _yoast_wpseo_canonical: ''
+  _yoast_wpseo_redirect: ''
+  _oembed_487cc14003713c6be6725f6572a94631: '{{unknown}}'
+  _oembed_9d739e8b4b1d00b51f1b409e3f86e316: '{{unknown}}'
+  _oembed_8920ac5bf5f8a5ef5251d7c506c8a19f: '{{unknown}}'
+  _oembed_138c8c3ed2e9826e38134df0ea5db96d: '{{unknown}}'
+  _oembed_ebf4e5c7ef3a939fe9deb8b020ba0a1f: '{{unknown}}'
+  _oembed_408b0ab8e0d3e6a9d7406a5ffc679125: '{{unknown}}'
+  _oembed_45de03f770a7d2fd382c0fb81c365a8c: '{{unknown}}'
+  _oembed_0547abe29bcae2f8fc7e3f0f9752c0c2: '{{unknown}}'
+  _oembed_5550f9675d19594198fcaafd15990a57: '{{unknown}}'
+  _oembed_978fbf4184d945441502a02bf8025d41: '{{unknown}}'
+---
+Geliştirdiğimiz uygulamalarda <a title="DAO_Pattern" href="http://en.wikipedia.org/wiki/DAO_Pattern" target="_blank">DAO</a> veya <a title="http://en.wikipedia.org/wiki/Facade_pattern" href="http://en.wikipedia.org/wiki/Facade_pattern" target="_blank">Façade</a> patternleri üzerinden veritabanı işlemlerimizi soyutlaştırarak diğer katmanların veritabanı ile olan bağımlılıklarını ortadan kaldırıyoruz.Soyutlaştırmadan anlatmak istediğim mimarimizdeki katmanların artık veritabanı işlemleri için bir interface üzerinden işlemleri yapabiliyor olması.Bu sayede uygulamamızda istediğimiz esnekliğe sahip olabiliriz.Aslında "<strong>Coding to Interfaces</strong>" yaklaşımı.
+
+Active Record patternini <a title="Martin_Fowler" href="http://en.wikipedia.org/wiki/Martin_Fowler" target="_blank">Martin Fowler</a> tarafından isimlendirilmiştir.Active Record pattern sayesinde modellerimiz üzerinden direk veritabanı ile ilgili olan işlemlerimizi yaptığımız wrapper bir sınıfı gibi oluyor.Active Record pattern  kullanan bir çok ORM framework'ü mevcut.Hibernate ise en yakın olan pattern <a title="http://en.wikipedia.org/wiki/Datamapper" href="http://en.wikipedia.org/wiki/Datamapper" target="_blank">Datamapper</a> pattern kullanmaktadır.
+<!--more-->
+Bu ihtiyaç ise uzun zamandır django modeller üzerinden veritabanı işlemleri yapıyor olmam idi.Peki bunu java da nasıl implemente ederim derken araştırıp bulup java ile yapabiliyor olmam çok hoşuma gitti.
+
+Daha iyi anlatmak için aşağıdaki örneği incelemekte faydalı olur diye düşünüyorum
+
+Country modelim var.Country modelim üzerinden artık veritabanı işlemleri  yapmak istiyorum.
+
+Country.findAll() yapmak istediğimde bana tüm Countryleri dönmesini istiyorum.
+<pre class="lang:java decode:true" title="Country Model">import javax.persistence.*;
+
+/**
+ * Created by IntelliJ IDEA.
+ * User: umitunal
+ */
+@Entity
+@Table(name = "country")
+public class Country {
+
+    @Id
+    @Column(name="COUNTRY_ID")
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private Long id;
+
+    @Column(name = "COUNTRY_CODE")
+    private String code;
+
+    @Column(name ="COUNTRY_NAME")
+    private String name;
+
+    public Country() {}
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+}</pre>
+<pre class="lang:java decode:true" title="CountryPersistence">import org.hibernate.SessionFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.persistence.Entity;
+import java.util.List;
+
+/**
+ * Created by IntelliJ IDEA.
+ * User: umitunal
+ */
+public aspect CountryPersistence {
+
+    declare @type: Country: @Configurable;
+
+    declare @type: Country: @Entity;
+
+    @Autowired
+    private transient SessionFactory Country.sessionFactory;
+
+    @Transactional
+    public void Country.persist() {
+        sessionFactory.openSession().save(this);
+    }
+
+    @Transactional(readOnly = true)
+    public static List&lt;Country&gt; Country.findAll() {
+        return new Country().sessionFactory.openSession().createCriteria(Country.class).list();
+    }
+
+    @Transactional(readOnly = true)
+    public static Country Country.findById(Long id) {
+        return (Country) new Country().sessionFactory.openSession().get(Country.class,id);
+    }
+
+}</pre>
+<pre class="lang:java decode:true" title="ApplicationContext">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context-3.1.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx-3.1.xsd"&gt;
+
+    &lt;context:spring-configured/&gt;
+
+    &lt;bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource"&gt;
+        &lt;property name="driverClassName" value="org.hsqldb.jdbcDriver" /&gt;
+        &lt;property name="url" value="jdbc:hsqldb:mem:mydb" /&gt;
+        &lt;property name="username" value="sa" /&gt;
+        &lt;property name="password" value="" /&gt;
+    &lt;/bean&gt;
+
+    &lt;bean id="hibernateSessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean"&gt;
+        &lt;property name="dataSource" ref="dataSource"/&gt;
+        &lt;property name="packagesToScan" value="org.umitunal.model" /&gt;
+        &lt;property name="hibernateProperties"&gt;
+            &lt;props&gt;
+                &lt;prop key="hibernate.dialect"&gt;org.hibernate.dialect.HSQLDialect&lt;/prop&gt;
+                &lt;prop key="hibernate.show_sql"&gt;true&lt;/prop&gt;
+                &lt;prop key="hibernate.format_sql"&gt;true&lt;/prop&gt;
+                &lt;prop key="hibernate.hbm2ddl.auto"&gt;update&lt;/prop&gt;
+            &lt;/props&gt;
+        &lt;/property&gt;
+
+    &lt;/bean&gt;
+
+    &lt;bean id="transactionManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager"&gt;
+        &lt;property name="sessionFactory" ref="hibernateSessionFactory"/&gt;
+    &lt;/bean&gt;
+
+    &lt;tx:annotation-driven mode="aspectj" /&gt;
+
+&lt;/beans&gt;</pre>
+<pre class="lang:java decode:true" title="CountryTest">import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestExecutionListeners;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
+import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.transaction.annotation.Transactional;
+import org.umitunal.model.Country;
+
+import java.util.UUID;
+
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
+
+/**
+ * Created by IntelliJ IDEA.
+ * User: umitunal
+ */
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations = { "classpath:application-context.xml" })
+@TestExecutionListeners({DependencyInjectionTestExecutionListener.class})
+@TransactionConfiguration(transactionManager = "transactionManager", defaultRollback = true)
+@Transactional
+public class CountryTest {
+
+    @Before
+    public void setUp()  {
+      for (int i = 1; i&lt;=100;i++){
+          String name = UUID.randomUUID().toString();
+          String code = UUID.randomUUID().toString();
+          new Country(name, code).persist();
+      }
+    }
+
+    @Test
+    public void testFindAll() {
+         assertEquals(100, Country.findAll().size());
+    }
+
+    @Test
+    public void testFindById() throws Exception {
+        for (Country country : Country.findAll()) {
+            assertNotNull(country.getId());
+            Country expectedCountry = Country.findById(country.getId());
+            assertNotNull(expectedCountry);
+        }
+    }
+}</pre>
+
+ 
+<pre class="lang:java decode:true " title="pom.xml" >&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"&gt;
+    &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+
+    &lt;groupId&gt;spring-activerecords-patterns&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-activerecords-patterns&lt;/artifactId&gt;
+    &lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
+
+    &lt;properties&gt;
+        &lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;
+        &lt;project.reporting.outputEncoding&gt;UTF-8&lt;/project.reporting.outputEncoding&gt;
+
+        &lt;java.version&gt;1.6&lt;/java.version&gt;
+        &lt;maven-aspectj-plugin.version&gt;1.2&lt;/maven-aspectj-plugin.version&gt;
+        &lt;maven-compiler-plugin.version&gt;2.3.2&lt;/maven-compiler-plugin.version&gt;
+        &lt;maven-surefire-plugin.version&gt;2.10&lt;/maven-surefire-plugin.version&gt;
+
+        &lt;aspectj.version&gt;1.6.12&lt;/aspectj.version&gt;
+        &lt;gclib.version&gt;2.2.2&lt;/gclib.version&gt;
+
+        &lt;hibernate.version&gt;4.1.5.Final&lt;/hibernate.version&gt;
+        &lt;hsqldb.version&gt;1.8.0.10&lt;/hsqldb.version&gt;
+        &lt;spring.version&gt;3.1.2.RELEASE&lt;/spring.version&gt;
+
+        &lt;junit.version&gt;4.10&lt;/junit.version&gt;
+    &lt;/properties&gt;
+
+    &lt;dependencies&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.aspectj&lt;/groupId&gt;
+            &lt;artifactId&gt;aspectjrt&lt;/artifactId&gt;
+            &lt;version&gt;${aspectj.version}&lt;/version&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;cglib&lt;/groupId&gt;
+            &lt;artifactId&gt;cglib&lt;/artifactId&gt;
+            &lt;version&gt;${gclib.version}&lt;/version&gt;
+        &lt;/dependency&gt;
+
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.springframework&lt;/groupId&gt;
+            &lt;artifactId&gt;spring-aop&lt;/artifactId&gt;
+            &lt;version&gt;${spring.version}&lt;/version&gt;
+        &lt;/dependency&gt;
+
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.springframework&lt;/groupId&gt;
+            &lt;artifactId&gt;spring-aspects&lt;/artifactId&gt;
+            &lt;version&gt;${spring.version}&lt;/version&gt;
+        &lt;/dependency&gt;
+
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.springframework&lt;/groupId&gt;
+            &lt;artifactId&gt;spring-orm&lt;/artifactId&gt;
+            &lt;version&gt;${spring.version}&lt;/version&gt;
+        &lt;/dependency&gt;
+
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.springframework&lt;/groupId&gt;
+            &lt;artifactId&gt;spring-test&lt;/artifactId&gt;
+            &lt;version&gt;${spring.version}&lt;/version&gt;
+        &lt;/dependency&gt;
+
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.hibernate&lt;/groupId&gt;
+            &lt;artifactId&gt;hibernate-entitymanager&lt;/artifactId&gt;
+            &lt;version&gt;${hibernate.version}&lt;/version&gt;
+        &lt;/dependency&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.hsqldb&lt;/groupId&gt;
+            &lt;artifactId&gt;hsqldb&lt;/artifactId&gt;
+            &lt;version&gt;2.2.8&lt;/version&gt;
+        &lt;/dependency&gt;
+
+
+        &lt;dependency&gt;
+            &lt;groupId&gt;junit&lt;/groupId&gt;
+            &lt;artifactId&gt;junit&lt;/artifactId&gt;
+            &lt;version&gt;${junit.version}&lt;/version&gt;
+            &lt;scope&gt;test&lt;/scope&gt;
+        &lt;/dependency&gt;
+    &lt;/dependencies&gt;
+
+    &lt;build&gt;
+        &lt;plugins&gt;
+            &lt;plugin&gt;
+                &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+                &lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
+                &lt;version&gt;${maven-compiler-plugin.version}&lt;/version&gt;
+                &lt;configuration&gt;
+                    &lt;encoding&gt;UTF-8&lt;/encoding&gt;
+                    &lt;source&gt;${java.version}&lt;/source&gt;
+                    &lt;target&gt;${java.version}&lt;/target&gt;
+                &lt;/configuration&gt;
+            &lt;/plugin&gt;
+            &lt;plugin&gt;
+                &lt;groupId&gt;org.codehaus.mojo&lt;/groupId&gt;
+                &lt;artifactId&gt;aspectj-maven-plugin&lt;/artifactId&gt;
+                &lt;version&gt;1.2&lt;/version&gt;
+                &lt;configuration&gt;
+                    &lt;outxml&gt;true&lt;/outxml&gt;
+                    &lt;aspectLibraries&gt;
+                        &lt;aspectLibrary&gt;
+                            &lt;groupId&gt;org.springframework&lt;/groupId&gt;
+                            &lt;artifactId&gt;spring-aspects&lt;/artifactId&gt;
+                        &lt;/aspectLibrary&gt;
+                    &lt;/aspectLibraries&gt;
+                    &lt;complianceLevel&gt;${java.version}&lt;/complianceLevel&gt;
+                &lt;/configuration&gt;
+                &lt;dependencies&gt;
+                    &lt;dependency&gt;
+                        &lt;groupId&gt;org.aspectj&lt;/groupId&gt;
+                        &lt;artifactId&gt;aspectjrt&lt;/artifactId&gt;
+                        &lt;version&gt;${aspectj.version}&lt;/version&gt;
+                    &lt;/dependency&gt;
+                    &lt;dependency&gt;
+                        &lt;groupId&gt;org.aspectj&lt;/groupId&gt;
+                        &lt;artifactId&gt;aspectjtools&lt;/artifactId&gt;
+                        &lt;version&gt;${aspectj.version}&lt;/version&gt;
+                    &lt;/dependency&gt;
+                &lt;/dependencies&gt;
+                &lt;executions&gt;
+                    &lt;execution&gt;
+                        &lt;goals&gt;
+                            &lt;goal&gt;compile&lt;/goal&gt;
+                            &lt;goal&gt;test-compile&lt;/goal&gt;
+                        &lt;/goals&gt;
+                    &lt;/execution&gt;
+                &lt;/executions&gt;
+            &lt;/plugin&gt;
+
+            &lt;plugin&gt;
+                &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+                &lt;artifactId&gt;maven-surefire-plugin&lt;/artifactId&gt;
+                &lt;version&gt;${maven-surefire-plugin.version}&lt;/version&gt;
+            &lt;/plugin&gt;
+        &lt;/plugins&gt;
+    &lt;/build&gt;
+&lt;/project&gt;</pre> 

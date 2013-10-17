@@ -1,0 +1,39 @@
+---
+layout: post
+title: MongoDB çalışmak için örnek data
+categories:
+- Java
+- Mongo
+tags: []
+status: publish
+type: post
+published: true
+meta:
+  _edit_last: '1'
+  _yoast_wpseo_focuskw: ''
+  _yoast_wpseo_title: ''
+  _yoast_wpseo_metadesc: ''
+  _yoast_wpseo_meta-robots-noindex: '0'
+  _yoast_wpseo_meta-robots-nofollow: '0'
+  _yoast_wpseo_meta-robots-adv: none
+  _yoast_wpseo_sitemap-include: '-'
+  _yoast_wpseo_sitemap-prio: '-'
+  _yoast_wpseo_canonical: ''
+  _yoast_wpseo_redirect: ''
+  _yoast_wpseo_linkdex: '0'
+---
+Mongodb öğrenmeye başladım.İlk iş olarak uzun süredir elimde olan screencast'leri izlemeye başladım.İlerledikçe artık elinizde data olmasını istiyorsunuz.Çünkü çoğu zaman denemek istediklerinizi yapamıyorsunuz.Aşağıdaki for döngüsü ile kendime sayıların karelerini alıp data yaratmaya çalışıyorum bir yere kadar.Bunu MongoDB shell'i üzerinden çalıştırdım.
+
+<pre class="brush:javascript">
+for(i=1;i<=1000;i++){
+    db.squares.save({n:i,squares:i*i}) 
+}
+</pre>
+Örnek data için <a href="http://media.mongodb.org/zips.json" title="http://media.mongodb.org/zips.json">http://media.mongodb.org/zips.json</a> bu linkdeki datayı indirebilirsiniz.
+
+Peki bunu nasıl import edeceksiniz.
+<pre class="brush:bash">
+umitunal@umitunal:~$ mongoimport --db dbnizinadi --collection zips --file /home/umitunal/Desktop/zips.json
+</pre>
+
+

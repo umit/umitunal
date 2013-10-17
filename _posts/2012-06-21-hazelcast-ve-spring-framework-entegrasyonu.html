@@ -1,0 +1,41 @@
+---
+layout: post
+title: Hazelcast & Spring Framework Entegrasyonu
+categories:
+- Java
+tags:
+- configuration
+- hazelcast
+- spring
+status: publish
+type: post
+published: true
+meta:
+  _edit_last: '1'
+  _yoast_wpseo_focuskw: spring framework, hazelcast
+  _yoast_wpseo_title: Hazelcast & Spring Entegrasyonu
+  _yoast_wpseo_metadesc: Hazelcast ve Spring Entegrasyonu
+  _yoast_wpseo_meta-robots-noindex: '0'
+  _yoast_wpseo_meta-robots-nofollow: '0'
+  _yoast_wpseo_meta-robots-adv: none
+  _yoast_wpseo_sitemap-include: '-'
+  _yoast_wpseo_sitemap-prio: '-'
+  _yoast_wpseo_canonical: ''
+  _yoast_wpseo_redirect: ''
+  _yoast_wpseo_linkdex: '39'
+---
+<a title="Hazelcast" href="http://www.hazelcast.com/">Hazelcast</a> ile <a title="http://www.springsource.org/" href="http://www.springsource.org/">Spring Framework</a> entegrasyonu oldukça kolay ve basit.Hazelcast hakkında detaylı bilgi edinmek için <a href="http://tr.linkedin.com/in/hakanilter" title="Hakan İlter">Hakan İLTER</a>'in yazdığı <a title="Hazelcast – Veri Dağıtım Sanatı" href="http://devveri.com/olceklenebilirlik/hazelcast-veri-dagitim-sanati">Hazelcast – Veri Dağıtım Sanatı</a> yazısını okumanızı tavsiye ederim.
+Hazelcast Spring Framework entegrasyonu için "hazelcast-spring" projesi bulunmaktadır.Maven projenize aşağıdaki gibi dependencyleri eklemeniz yeterlidir.
+
+<!--more-->
+
+<script src="https://gist.github.com/2967840.js"> </script>
+
+Aşağıdaki gibi applicationContext-Hazelcast.xml'e hazelcast namespace taglerini ekliyoruz.Sonra bunları tanımladıktan sonra hazelcast ayarlarını yaparken eclipse kendisi autocomplete olarak tanımları yapmanıza yardımcı oluyor.Klasik hazelcast.xml için yaptığımız tanımları applicationContext-Hazelcast.xml de yapıyoruz aslında.
+
+Daha detaylı Spring Entegrasyonu için Hazelcast <a href="http://www.hazelcast.com/docs/2.1/manual/single_html/#SpringIntegration" title="http://www.hazelcast.com/docs/2.1/manual/single_html/#SpringIntegration">dökümantasyonun</a> da bulabilirsiniz.
+<script src="https://gist.github.com/2967924.js"> </script>
+
+
+Tanımladığımız Hazelcast instance'ı ve productMap için yazdığımız testleri geçerse uygulamanız Hazelcast sorunsuz bir şekilde entegre olmuşunuzdur.
+<script type="text/javascript" src="https://gist.github.com/2978447.js"></script>

@@ -1,0 +1,124 @@
+---
+layout: post
+title: MongoDB için basit queryler
+categories:
+- Java
+tags: []
+status: publish
+type: post
+published: true
+meta:
+  _edit_last: '1'
+  _yoast_wpseo_focuskw: mongodb
+  _yoast_wpseo_title: Mongodb için örnek queryler- Ümit Ünal
+  _yoast_wpseo_metadesc: Mongodb için örnek queryler
+  _yoast_wpseo_meta-robots-noindex: '0'
+  _yoast_wpseo_meta-robots-nofollow: '0'
+  _yoast_wpseo_meta-robots-adv: none
+  _yoast_wpseo_sitemap-include: '-'
+  _yoast_wpseo_sitemap-prio: '-'
+  _yoast_wpseo_canonical: ''
+  _yoast_wpseo_redirect: ''
+  _yoast_wpseo_linkdex: '78'
+---
+Mongodb kurduğunuz dizindeki bin klasöründeki "mongo" uygulamasını çalıştırın.Baştan söyliyim IPython kullananlar için sıkıntı bir durum mevcut.Tab tuşuna basınca yapınca tamamlamıyor :).
+<pre class="brush: bash;">umitunal@umitunal:~$ mongo
+MongoDB shell version: 1.4.4
+url: test
+connecting to: test
+type "exit" to exit
+type "help" for help
+&gt;</pre>
+Açılan shell ekranında biraz ısınma turu yapalım yetenekleri açısından.Aşağıdaki komutları sırasıyla deneyebilirsiniz.
+<pre class="brush: bash;">&gt; x = 1
+&gt; y = 2
+&gt; x*y
+&gt; x + y
+&gt;"hello" + " mongodb"</pre>
+Sonra hemen üzerinde çalışacağımız database'i seçelim.Önce show dbs komutu ile tüm db'leri görelim.İlk kurulumda default gelen db'ler aşağıdaki gibidir.
+
+<!--more-->
+<pre class="brush: bash;">
+&gt; show dbs
+admin
+local
+myfiles
+test</pre>
+Ben test db'si üzerinde çalışmak istiyorum.Eğer siz kendi db'inizi yaratmak isterseniz "use dbadi" komutunu çalıştırın.Bir sonraki örnekde yapıcağım kayıt işleminden sonra tekrar "show dbs" komutunu kullanarak kendi db'inizi görebilirsiniz.
+<pre class="brush: bash;">&gt; use test
+switched to db test</pre>
+Aşağıdaki gibi json objemi people değişkenine atadım.
+<pre class="brush: bash;">&gt; people = { first_name:"umit", 
+             last_name:"unal", 
+             skills:["Java","Python","Javascript"]
+}
+{
+        "first_name" : "umit",
+        "last_name" : "unal",
+        "skills" : [
+                "Java",
+                "Python",
+                "Javascript"
+        ]
+}</pre>
+Şimdi kayıt işlemimizi yapalım.
+<pre class="brush: bash;">&gt; db.people.save(people)</pre>
+Kayıt işlemini yaptık.Kaydımızı listeleyim.
+<pre class="brush: bash;">&gt; db.people.find()
+{ "_id" : ObjectId("4e5be6e4d098e18871f831bc"), 
+   "first_name" : "umit", "last_name" : "unal", 
+   "skills" : [ "Java", "Python", "Javascript" ] }</pre>
+Toplam kayıtı öğrenelim gerçekten kayıt etmişmiyiz.
+<pre class="brush: bash;">&gt; db.people.count()
+1</pre>
+Evet 1 adet kayıt mevcut.
+
+people collectionı için daha detaylı bir bilgi istiyorsanız.
+<pre class="brush: bash;">&gt; db.people.stats()
+{
+        "ns" : "test.people",
+        "count" : 1,
+        "size" : 120,
+        "storageSize" : 8192,
+        "numExtents" : 1,
+        "nindexes" : 1,
+        "lastExtentSize" : 8192,
+        "paddingFactor" : 1,
+        "flags" : 1,
+        "totalIndexSize" : 8192,
+        "indexSizes" : {
+                "_id_" : 8192
+        },
+        "ok" : 1
+}</pre>
+people collectionın da hangi alanlar da index mevcut?
+<pre class="brush: bash;">&gt; db.people.getIndexes()
+[
+        {
+                "name" : "_id_",
+                "ns" : "test.people",
+                "key" : {
+                        "_id" : 1
+                }
+        }
+]</pre>
+people collectionı id alanı indexli sorun değil.Biz bir de first_name alanını indexlemek istersek?
+<pre class="brush: bash;">&gt; db.people.ensureIndex({first_name:1})
+&gt; db.people.getIndexes()
+[
+        {
+                "name" : "_id_",
+                "ns" : "test.people",
+                "key" : {
+                        "_id" : 1
+                }
+        },
+        {
+                "_id" : ObjectId("4e5d0d2ce22a7a64068f5769"),
+                "ns" : "test.people",
+                "key" : {
+                        "first_name" : 1
+                },
+                "name" : "first_name_1"
+        }
+]</pre>

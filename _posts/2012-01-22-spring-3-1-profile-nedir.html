@@ -1,0 +1,186 @@
+---
+layout: post
+title: Spring 3.1 Profile Nedir?
+categories:
+- Java
+- Spring
+tags:
+- spring
+- spring-profile
+status: publish
+type: post
+published: true
+meta:
+  _edit_last: '1'
+  _yoast_wpseo_focuskw: ''
+  _yoast_wpseo_title: ''
+  _yoast_wpseo_metadesc: ''
+  _yoast_wpseo_meta-robots-noindex: '0'
+  _yoast_wpseo_meta-robots-nofollow: '0'
+  _yoast_wpseo_meta-robots-adv: none
+  _yoast_wpseo_sitemap-include: '-'
+  _yoast_wpseo_sitemap-prio: '-'
+  _yoast_wpseo_canonical: ''
+  _yoast_wpseo_redirect: ''
+  _yoast_wpseo_linkdex: '0'
+---
+Genel de uygulamalarımızı  geliştirirken çeşitli development environment tanımlarına göre çalışma durumları oluyor. Neler bunlar  wikipedia üzerinden aldığım envoirment tanımları aşağıdaki listedeki gibi.Sizin kendi ihtiyaçlarınıza göre bu ortam tanımları değişebilir.
+
+<a title="http://en.wikipedia.org/wiki/Development_environment" href="http://en.wikipedia.org/wiki/Development_environment" target="_blank">http://en.wikipedia.org/wiki/Development_environment</a>
+<ul>
+	<li>Local</li>
+	<li>Virtual Machine</li>
+	<li>Development</li>
+	<li>Integration</li>
+	<li>Test/QA</li>
+	<li>UAT</li>
+	<li>Stage/Pre-production</li>
+	<li>Production/Live</li>
+</ul>
+Spring 3.1 ile birlikte   "@Profile" annotation eklendi.Spring ile uygulamanızı geliştirirken çeşitli environment durumlarına göre yönetmek açısından çok büyük kolaylıklar sağlıyor.Alternatif bir çok yol ile yapabilirsiniz.Ama zaten spring kullanıyorsunuz ve uygulamanızın environment ortamlarına göre farklı yöntemlerle yönetiyorsanız biraz garip olabilir.Zaten framework size bu kolaylığı sağlıyor.Gerçekten environment ortamlarına göre iş yapma da işinizi çok kolaylaştırabilecek bir özellik olduğuna inanıyorum.
+
+<!--more-->
+
+Bu annotationını nasıl kullanacağımızı basit bir örnekle anlatmak istiyorum hemen.Dev ve Prod ortamlarına göre ProductBean bize farklı ürün bilgileri dönücek.Spring konfigürasyonunu xml değil java tabanlı yapıcam.@Configuration annotation'ını ile java tabanlı konfigürasyon yapabilirsiniz.Xml tabanlı konfigürasyon sevmiyorsanız benim gibi güzel bir alternatif :).
+<pre class="brush:java">/**
+ * @author umitunal
+ *
+ */
+public class ProductBean {
+
+	private String category;
+	private String title;
+
+	public ProductBean() {}
+
+	public ProductBean(String category, String title) {
+		this.category = category;
+		this.title = title;
+	}
+
+	public String getCategory() {
+		return category;
+	}
+
+	public void setCategory(String category) {
+		this.category = category;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+}</pre>
+<pre class="brush:java">public interface BeanConfig {
+	ProductBean getProductBean();
+}</pre>
+<pre class="brush:java">/**
+ * @author umitunal
+ *
+ */
+@Configuration
+public class ApplicationContextConfig {
+
+	@Autowired
+	private BeanConfig beanConfig;
+
+	@Bean
+	public ProductBean getProductBean() {
+		return beanConfig.getProductBean();
+	}
+
+}</pre>
+<pre class="brush:java">public class ProfileEnvironment {
+
+	public static final String PROD = "prod";
+	public static final String DEV = "dev";
+
+}</pre>
+DevBeanConfig ile dev ortamı için ProductBean değerlerini tanımladık.
+<pre class="brush:java">@Configuration
+@Profile(value = ProfileEnvironment.DEV)
+public class DevBeanConfig implements BeanConfig {
+
+	@Bean
+	public ProductBean getProductBean() {
+		return new ProductBean("Cep Telefonu", "Samsung i9100 Galaxy S II");
+	}
+
+}</pre>
+ProdBeanConfig ile prod ortamı için ProductBean değerlerini tanımladık.
+<pre class="brush:java">@Configuration
+@Profile(value=ProfileEnvironment.PROD)
+public class ProdBeanConfig implements BeanConfig {
+
+	@Bean
+	public ProductBean getProductBean() {
+		return new ProductBean("Apple", "Apple Iphone 4s");
+	}
+
+}</pre>
+Tüm ortamların çalışdığını görmemiz açısından hemen basit bir test sınıfı içinde 2 ortam içinde testlerimizi yazdık.
+<pre class="brush:java">public class BeanConfigTest {
+
+	@Test
+	public void testProdBeanConfig(){
+		AnnotationConfigApplicationContext annotationConfigAC = new AnnotationConfigApplicationContext();
+                //DefaultProfile'imizi Prod. olarak tanımladık.
+		annotationConfigAC.getEnvironment().setDefaultProfiles(ProfileEnvironment.PROD);
+                //Ve contextde @Configuration annationına sahip sınıflarımızı register ediyoruz.
+		annotationConfigAC.register(ApplicationContextConfig.class,DevBeanConfig.class,ProdBeanConfig.class);
+		annotationConfigAC.refresh();
+
+		ProductBean productBean = annotationConfigAC.getBean(ProductBean.class);
+
+		assertNotNull(productBean);
+		assertEquals("Apple Iphone 4s", productBean.getTitle());
+	}	
+
+	@Test
+	public void testDevBeanConfig() {
+		AnnotationConfigApplicationContext annotationConfigAC = new AnnotationConfigApplicationContext();
+		// DefaultProfile'imizi Dev. olarak tanımladık.
+		annotationConfigAC.getEnvironment().setDefaultProfiles(ProfileEnvironment.DEV);
+		// Ve contextde @Configuration annationına sahip sınıflarımızı register ediyoruz.
+		annotationConfigAC.register(ApplicationContextConfig.class, DevBeanConfig.class, ProdBeanConfig.class);
+		annotationConfigAC.refresh();
+
+		ProductBean productBean = annotationConfigAC.getBean(ProductBean.class);
+
+		assertNotNull(productBean);
+		assertEquals("Samsung i9100 Galaxy S II", productBean.getTitle());
+	}
+}</pre>
+Belki yazdığımız unit testleri gerçekten development environment tanımlarına göre çalıştırmamız gerekebilir.
+Bu durumda @ActiveProfiles annotation'ını bize yardımcı oluyor.
+
+<strong>@ActiveProfiles(profiles = "dev")</strong> unit test sınıfımızın başına bunu eklediğimiz zaman dev ortamı için gerekli profile tanımlarını yükler.Bir başka durum ise dev ve uat ortamım için aynı unit test çalışmasını istiyorsam <strong>@ActiveProfiles(profiles={"dev","uat"})</strong> şeklinde tanımlanız yeterli.Aşağıdaki örnek dev ortamı içindir.
+<pre class="brush:java">@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = {ApplicationContextConfig.class,DevBeanConfig.class,ProdBeanConfig.class},loader=AnnotationConfigContextLoader.class)
+@ActiveProfiles(profiles = "dev")
+public class DevProfileBeanTest {
+
+	private final Logger logger = LoggerFactory.getLogger(DevProfileBeanTest.class);
+
+	@Autowired
+	ApplicationContext applicationContext;
+
+	@Test
+	public void testDevProfile(){
+		assertEquals("dev", applicationContext.getEnvironment().getActiveProfiles()[0]);
+	}
+
+	@Test
+	public void testProductBean() {
+		logger.info(" ==&gt; testProductBean " + applicationContext.getEnvironment().getActiveProfiles()[0]);
+		ProductBean productBean = applicationContext.getBean(ProductBean.class);
+		assertNotNull(productBean);
+		assertEquals(productBean.getTitle(), "Samsung i9100 Galaxy S II");
+	}
+
+}</pre>
+Aslında amaç örnek bir durumla bunu açıklamak gerekir ise dev ortamın da hsqldb yazdığınız bir logu prod ortamında mysql yazmak isteyebilirsiniz.Spring profile ile çeşitli development environment tanımlarınıza göre her şeyi yapabilirsiniz.

@@ -1,0 +1,28 @@
+---
+layout: post
+title: Maven Encoding Problemi
+categories:
+- Java
+- Maven
+tags:
+- maven
+status: private
+type: post
+published: false
+meta:
+  _edit_last: '1'
+  _yoast_wpseo_linkdex: '0'
+---
+<p>Maven ile projenizi build ederken aşağıdaki gibi Warning alabilirsiniz.<br />
+<code><br />
+[WARNING] Using platform encoding (Cp1252 actually) to copy filtered resources, i.e. build is platform dependent!<br />
+</code></p>
+<p>Çözümü:<br />
+pom.xml aşağıdaki properties tag'ini ekleyerek projenin build encoding'ini verebilirsiniz.<br />
+<code><br />
+
+<pre class="brush:xml">
+<properties>
+<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+</properties>
+</pre>
