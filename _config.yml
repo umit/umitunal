@@ -2,7 +2,7 @@ title:            Ümit ÜNAL
 tagline:          Software Engineer
 description:      Java, Python
 #Comment out url when working locally to resolve base urls correctly
-url:              http://localhost:4000/
+url:              http://localhost:4000
 
 # Owner/author information
 owner:
