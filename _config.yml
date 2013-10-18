@@ -23,7 +23,7 @@ owner:
 
 # Analytics and webmaster tools stuff goes here
 google_analytics: UA-12796744-1 
-google_verify:    gWQ-u9X9pBWvbAYbz1SHyvLRTCBQ9xcPsHkl160hbrc  
+google_verify:    "gWQ-u9X9pBWvbAYbz1SHyvLRTCBQ9xcPsHkl160hbrc"
 # https://ssl.bing.com/webmaster/configure/verify/ownership Option 2 content= goes here
 bing_verify:        
 
