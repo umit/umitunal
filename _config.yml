@@ -2,7 +2,7 @@ title:            Ümit ÜNAL
 tagline:          Software Engineer
 description:      Java, Python
 #Comment out url when working locally to resolve base urls correctly
-url:              http://umitunal.github.io/umitunal
+#url:              http://umitunal.github.io/umitunal
 
 # Owner/author information
 owner:
