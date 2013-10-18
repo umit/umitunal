@@ -2,7 +2,7 @@ title:            Ümit ÜNAL
 tagline:          Software Engineer
 description:      Java, Python
 #Comment out url when working locally to resolve base urls correctly
-url:              http://umitunal.github.io/umitunal
+url:              http://www.umitunal.net
 
 # Owner/author information
 owner:
@@ -11,9 +11,9 @@ owner:
   bio:            "Software Engineer - #java, #python, #tdd, #agile"
   email:          umit.unal.89@gmail.com
   # Social networking links are used in author-bio sidebar. Update and remove as you like.
-  github: 		  umitunal        
+  github: 		    umitunal        
   linkedin:       umitunal
-  twitter:		  umitunal_        
+  twitter:		    umitunal_        
   facebook:       
   instagram:      
   lastfm:         
